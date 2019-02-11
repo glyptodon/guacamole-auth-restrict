@@ -1,0 +1,16 @@
+{
+
+    "guacamoleVersion" : "1.1.0",
+
+    "name"      : "Additional User/Group Restrictions",
+    "namespace" : "addl-restrict",
+
+    "authProviders" : [
+        "com.glyptodon.guacamole.auth.restrict.RestrictedAuthenticationProvider"
+    ],
+
+    "translations" : [
+        "translations/en.json"
+    ]
+
+}

@@ -22,8 +22,6 @@
 
 package com.glyptodon.guacamole.auth.restrict.user;
 
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,9 +83,8 @@ public class RestrictedUserContext extends DelegatingUserContext {
      * @param userContext
      *     The UserContext restrict access to.
      */
-    @AssistedInject
-    public RestrictedUserContext(@Assisted AuthenticatedUser authenticatedUser,
-            @Assisted UserContext userContext) {
+    public RestrictedUserContext(AuthenticatedUser authenticatedUser,
+            UserContext userContext) {
         super(userContext);
         this.authenticatedUser = authenticatedUser;
     }

@@ -22,14 +22,12 @@
 
 package com.glyptodon.guacamole.auth.restrict;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
 import org.apache.guacamole.GuacamoleException;
 import org.apache.guacamole.net.auth.AbstractAuthenticationProvider;
 import org.apache.guacamole.net.auth.AuthenticatedUser;
 import org.apache.guacamole.net.auth.Credentials;
 import org.apache.guacamole.net.auth.UserContext;
-import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContextFactory;
 
 /**
  * AuthenticationProvider implementation which enforces restrictions defined by
@@ -39,31 +37,16 @@ import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContextFactory;
  */
 public class RestrictedAuthenticationProvider extends AbstractAuthenticationProvider {
 
-    /**
-     * Injector which will manage the object graph of this authentication
-     * provider.
-     */
-    private final RestrictedUserContextFactory userContextFactory;
-
     @Override
     public String getIdentifier() {
         return "addl-restrict";
-    }
-
-    /**
-     * Creates a new RestrictedAuthenticationProvider which enforces
-     * restrictions defined by custom attributes.
-     */
-    public RestrictedAuthenticationProvider() {
-        Injector injector = Guice.createInjector(new RestrictedAuthenticationProviderModule());
-        this.userContextFactory = injector.getInstance(RestrictedUserContextFactory.class);
     }
 
     @Override
     public UserContext decorate(UserContext context,
             AuthenticatedUser authenticatedUser, Credentials credentials)
             throws GuacamoleException {
-        return userContextFactory.create(authenticatedUser, context);
+        return new RestrictedUserContext(authenticatedUser, context);
     }
 
 }

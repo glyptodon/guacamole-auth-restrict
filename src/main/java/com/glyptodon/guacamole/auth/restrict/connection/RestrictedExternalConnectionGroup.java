@@ -24,7 +24,7 @@ package com.glyptodon.guacamole.auth.restrict.connection;
 
 import java.util.Map;
 import org.apache.guacamole.GuacamoleException;
-import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
+import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
 import org.apache.guacamole.net.GuacamoleTunnel;
 import org.apache.guacamole.net.auth.ConnectionGroup;
 import org.apache.guacamole.net.auth.DelegatingConnectionGroup;
@@ -34,12 +34,12 @@ import org.apache.guacamole.protocol.GuacamoleClientInformation;
  * ConnectionGroup implementation which enforces the restrictions affecting the
  * user accessing the connection group.
  */
-public class RestrictedConnectionGroup extends DelegatingConnectionGroup {
+public class RestrictedExternalConnectionGroup extends DelegatingConnectionGroup {
 
     /**
      * The UserContext of the user accessing this object.
      */
-    private final RestrictedUserContext userContext;
+    private final RestrictedExternalUserContext userContext;
 
     /**
      * Creates a new RestrictedConnectionGroup which wraps the given connection
@@ -52,7 +52,7 @@ public class RestrictedConnectionGroup extends DelegatingConnectionGroup {
      * @param connectionGroup
      *     The connection group that the user is attempting to access.
      */
-    public RestrictedConnectionGroup(RestrictedUserContext userContext,
+    public RestrictedExternalConnectionGroup(RestrictedExternalUserContext userContext,
             ConnectionGroup connectionGroup) {
         super(connectionGroup);
         this.userContext = userContext;
@@ -61,7 +61,7 @@ public class RestrictedConnectionGroup extends DelegatingConnectionGroup {
     @Override
     public GuacamoleTunnel connect(GuacamoleClientInformation info,
             Map<String, String> tokens) throws GuacamoleException {
-        return new RestrictedTunnel(userContext, super.connect(info, tokens));
+        return new RestrictedExternalTunnel(userContext, super.connect(info, tokens));
     }
 
     /**

@@ -22,8 +22,12 @@
 
 package com.glyptodon.guacamole.auth.restrict;
 
+import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
 import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
+import com.glyptodon.guacamole.auth.restrict.user.groups.RestrictedUserGroupDirectory;
 import org.apache.guacamole.GuacamoleException;
+import org.apache.guacamole.environment.Environment;
+import org.apache.guacamole.environment.LocalEnvironment;
 import org.apache.guacamole.net.auth.AbstractAuthenticationProvider;
 import org.apache.guacamole.net.auth.AuthenticatedUser;
 import org.apache.guacamole.net.auth.Credentials;
@@ -31,11 +35,35 @@ import org.apache.guacamole.net.auth.UserContext;
 
 /**
  * AuthenticationProvider implementation which enforces restrictions defined by
- * custom attributes on users and user groups. Users with administrative access
- * to other users or user groups will additionally be able to modify the values
- * of these attributes.
+ * specific user groups. The additional restrictions applicable to the groups
+ * defined by this extension are exposed in a read-only way through custom
+ * attributes.
  */
 public class RestrictedAuthenticationProvider extends AbstractAuthenticationProvider {
+
+    /**
+     * The Guacamole server environment.
+     */
+    private final Environment environment;
+
+    /**
+     * The directory of all user groups defined by the
+     * "guacamole-auth-restrict" extension.
+     */
+    private final RestrictedUserGroupDirectory restrictedUserGroupDirectory;
+
+    /**
+     * Creates a new RestrictedAuthenticationProvider which reads all
+     * configuration information from the local Guacamole server environment
+     * (GUACAMOLE_HOME/guacamole.properties).
+     *
+     * @throws GuacamoleException
+     *     If guacamole.properties cannot be read.
+     */
+    public RestrictedAuthenticationProvider() throws GuacamoleException {
+        this.environment = new LocalEnvironment();
+        this.restrictedUserGroupDirectory = new RestrictedUserGroupDirectory(environment);
+    }
 
     @Override
     public String getIdentifier() {
@@ -43,10 +71,18 @@ public class RestrictedAuthenticationProvider extends AbstractAuthenticationProv
     }
 
     @Override
+    public UserContext getUserContext(AuthenticatedUser authenticatedUser)
+            throws GuacamoleException {
+        return new RestrictedUserContext(this, authenticatedUser, restrictedUserGroupDirectory);
+    }
+
+    @Override
     public UserContext decorate(UserContext context,
             AuthenticatedUser authenticatedUser, Credentials credentials)
             throws GuacamoleException {
-        return new RestrictedUserContext(authenticatedUser, context);
+        return new RestrictedExternalUserContext(
+                restrictedUserGroupDirectory.getRestrictions(authenticatedUser),
+                context);
     }
 
 }

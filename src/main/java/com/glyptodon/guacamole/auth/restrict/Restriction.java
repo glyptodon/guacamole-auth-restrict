@@ -22,23 +22,23 @@
 
 package com.glyptodon.guacamole.auth.restrict;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import org.apache.guacamole.form.BooleanField;
-import org.apache.guacamole.form.Field;
 
 /**
- * A Restriction enforced by this extension. Restrictions may be associated
- * with users or user groups through attributes. Each restriction has a
- * corresponding custom attribute that controls whether the restriction is
- * enabled.
+ * A Restriction enforced by this extension. The association between a
+ * restriction and a user group may be exposed through attributes. Each
+ * restriction has a corresponding custom attribute that denotes whether the
+ * restriction is in effect.
  */
 public enum Restriction {
 
     /**
-     * Forces all connections to be read-only when accessed by the affected
-     * user or members of the affected user group. When in effect, instructions
-     * sent to the connection by affected users or group members will be
-     * dropped. Only the "sync" instruction is allowed through.
+     * Forces all connections to be read-only when accessed by the members of
+     * the affected user group. When in effect, instructions sent to the
+     * connection by affected group members will be dropped. Only the "sync"
+     * instruction is allowed through.
      */
     FORCE_READ_ONLY("addl-restrict-force-read-only");
 
@@ -50,16 +50,16 @@ public enum Restriction {
 
     /**
      * The name of the custom attribute storing whether the restriction is
-     * enabled for the associated user or user group.
+     * enabled for the associated user group.
      */
     private final String attributeName;
 
     /**
-     * Creates a new Restriction which is controlled by the custom attribute
+     * Creates a new Restriction which is exposed using the custom attribute
      * having the given name.
      *
      * @param attributeName
-     *     The name of the attribute which controls whether the restriction is
+     *     The name of the attribute which exposes whether the restriction is
      *     enabled.
      */
     private Restriction(String attributeName) {
@@ -67,27 +67,11 @@ public enum Restriction {
     }
 
     /**
-     * Returns whether this restriction is in effect for the user or user group
-     * associated with the given attributes.
-     *
-     * @param attributes
-     *     A map of attribute name/value pairs retrieved from a user or user
-     *     group.
-     *
-     * @return
-     *     true of this restriction is enabled according to the given
-     *     attributes, false otherwise.
-     */
-    public boolean isSet(Map<String, String> attributes) {
-        return TRUTH_VALUE.equals(attributes.get(attributeName));
-    }
-
-    /**
      * Returns the name of the custom attribute storing whether the restriction
-     * is enabled for the associated user or user group.
+     * is enabled for the associated user group.
      *
      * @return
-     *     The name of the attribute which controls whether this restriction is
+     *     The name of the attribute which exposes whether this restriction is
      *     enabled.
      */
     public String getAttributeName() {
@@ -95,15 +79,25 @@ public enum Restriction {
     }
 
     /**
-     * Returns a Field which represents the attribute controlling whether this
-     * restriction is enabled for a user or user group.
+     * Creates a new map of attribute name/value pairs which exposes that the
+     * restrictions in the given collection apply.
+     *
+     * @param restrictions
+     *     The restrictions to convert into a new map of attribute name/value
+     *     pairs.
      *
      * @return
-     *     A Field representing the attribute controlling whether this
-     *     restriction is enabled.
+     *     A new map of attribute name/value pairs which exposes that the given
+     *     restrictions apply.
      */
-    public Field asField() {
-        return new BooleanField(attributeName, TRUTH_VALUE);
+    public static Map<String, String> asAttributeMap(Collection<Restriction> restrictions) {
+
+        Map<String, String> attributes = new HashMap<>();
+        for (Restriction restriction : restrictions)
+            attributes.put(restriction.getAttributeName(), TRUTH_VALUE);
+
+        return attributes;
+
     }
 
 }

@@ -24,7 +24,7 @@ package com.glyptodon.guacamole.auth.restrict.connection;
 
 import java.util.Set;
 import com.glyptodon.guacamole.auth.restrict.Restriction;
-import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
+import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
 import org.apache.guacamole.io.GuacamoleReader;
 import org.apache.guacamole.io.GuacamoleWriter;
 import org.apache.guacamole.net.DelegatingGuacamoleTunnel;
@@ -36,7 +36,7 @@ import org.apache.guacamole.protocol.GuacamoleInstruction;
  * GuacamoleTunnel implementation which enforces the restrictions affecting
  * the user accessing the tunnel.
  */
-public class RestrictedTunnel extends DelegatingGuacamoleTunnel {
+public class RestrictedExternalTunnel extends DelegatingGuacamoleTunnel {
 
     /**
      * The set of restrictions affecting the user accessing this tunnel.
@@ -54,7 +54,7 @@ public class RestrictedTunnel extends DelegatingGuacamoleTunnel {
      * @param tunnel
      *     The tunnel that the user is attempting to access.
      */
-    public RestrictedTunnel(RestrictedUserContext userContext,
+    public RestrictedExternalTunnel(RestrictedExternalUserContext userContext,
             GuacamoleTunnel tunnel) {
         super(tunnel);
         this.restrictions = userContext.getRestrictions();

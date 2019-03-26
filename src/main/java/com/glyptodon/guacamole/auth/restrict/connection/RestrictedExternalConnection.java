@@ -24,7 +24,7 @@ package com.glyptodon.guacamole.auth.restrict.connection;
 
 import java.util.Map;
 import org.apache.guacamole.GuacamoleException;
-import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
+import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
 import org.apache.guacamole.net.GuacamoleTunnel;
 import org.apache.guacamole.net.auth.Connection;
 import org.apache.guacamole.net.auth.DelegatingConnection;
@@ -34,12 +34,12 @@ import org.apache.guacamole.protocol.GuacamoleClientInformation;
  * Connection implementation which enforces the restrictions affecting the user
  * accessing the connection.
  */
-public class RestrictedConnection extends DelegatingConnection {
+public class RestrictedExternalConnection extends DelegatingConnection {
 
     /**
      * The UserContext of the user accessing this object.
      */
-    private final RestrictedUserContext userContext;
+    private final RestrictedExternalUserContext userContext;
 
     /**
      * Creates a new RestrictedConnection which wraps the given connection,
@@ -52,7 +52,7 @@ public class RestrictedConnection extends DelegatingConnection {
      * @param connection
      *     The connection that the user is attempting to access.
      */
-    public RestrictedConnection(RestrictedUserContext userContext,
+    public RestrictedExternalConnection(RestrictedExternalUserContext userContext,
             Connection connection) {
         super(connection);
         this.userContext = userContext;
@@ -61,7 +61,7 @@ public class RestrictedConnection extends DelegatingConnection {
     @Override
     public GuacamoleTunnel connect(GuacamoleClientInformation info,
             Map<String, String> tokens) throws GuacamoleException {
-        return new RestrictedTunnel(userContext, super.connect(info, tokens));
+        return new RestrictedExternalTunnel(userContext, super.connect(info, tokens));
     }
 
     /**

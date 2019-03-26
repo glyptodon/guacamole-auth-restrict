@@ -2,16 +2,6 @@
 
     "DATA_SOURCE_ADDL_RESTRICT" : {
         "NAME" : "Additional User/Group Restrictions"
-    },
-
-    "USER_ATTRIBUTES" : {
-        "FIELD_HEADER_ADDL_RESTRICT_FORCE_READ_ONLY" : "Force read-only for all connections",
-        "SECTION_HEADER_ADDL_RESTRICT" : "Additional Restrictions"
-    },
-
-    "USER_GROUP_ATTRIBUTES" : {
-        "FIELD_HEADER_ADDL_RESTRICT_FORCE_READ_ONLY" : "@:USER_ATTRIBUTES.FIELD_HEADER_ADDL_RESTRICT_FORCE_READ_ONLY",
-        "SECTION_HEADER_ADDL_RESTRICT" : "@:USER_ATTRIBUTES.SECTION_HEADER_ADDL_RESTRICT"
     }
 
 }

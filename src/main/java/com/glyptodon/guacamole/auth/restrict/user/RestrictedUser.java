@@ -22,113 +22,43 @@
 
 package com.glyptodon.guacamole.auth.restrict.user;
 
-import java.util.Map;
+import com.glyptodon.guacamole.auth.restrict.user.groups.RestrictedUserGroupDirectory;
 import org.apache.guacamole.GuacamoleException;
-import org.apache.guacamole.net.auth.DelegatingUser;
-import org.apache.guacamole.net.auth.Permissions;
-import org.apache.guacamole.net.auth.User;
-import org.apache.guacamole.net.auth.permission.ObjectPermission;
-import org.apache.guacamole.net.auth.permission.SystemPermission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.guacamole.net.auth.permission.ObjectPermissionSet;
+import org.apache.guacamole.net.auth.simple.SimpleObjectPermissionSet;
+import org.apache.guacamole.net.auth.simple.SimpleUser;
 
 /**
- * User implementation which provides access to custom attributes controlling
- * restrictions. Access to restriction attributes is given only if the user
- * accessing this object has ADMINISTER permission. If the user accessing the
- * object lacks ADMINISTER permission, access to the attributes controlling
- * restrictions is blocked.
+ * A user of the "guacamole-auth-restrict" extension.
  */
-public class RestrictedUser extends DelegatingUser {
+public class RestrictedUser extends SimpleUser {
 
     /**
-     * Logger for this class.
+     * The directory of user groups accessible by this user.
      */
-    private final Logger logger = LoggerFactory.getLogger(RestrictedUser.class);
+    private final RestrictedUserGroupDirectory restrictedUserGroupDirectory;
 
     /**
-     * The UserContext of the user accessing this object.
+     * Creates a new RestrictedUser having the given username and read-only
+     * access to the groups within the given directory.
+     *
+     * @param username
+     *     The username to assign to the new RestrictedUser.
+     *
+     * @param restrictedUserGroupDirectory
+     *     The directory of all groups defined by the "guacamole-auth-restrict"
+     *     extension that are readable by the user.
      */
-    private final RestrictedUserContext userContext;
-
-    /**
-     * Creates a new RestrictedUser which wraps the given user, providing
-     * selective access to the custom attributes which control the additional
-     * restrictions provided by this extension. Access to the custom attributes
-     * is provided only to users having ADMINSTER permission.
-     *
-     * @param userContext
-     *     The UserContext of the user accessing the given user.
-     *
-     * @param user
-     *     The user that the user is attempting to access.
-     */
-    public RestrictedUser(RestrictedUserContext userContext, User user) {
-        super(user);
-        this.userContext = userContext;
-    }
-
-    /**
-     * Filters the given map of attribute name/value pairs, returning a
-     * potentially new map which contains only the attributes that the
-     * user accessing this object has permission to view or modify. The custom
-     * attributes managed by this extension will be present only if the user
-     * accessing this object has ADMINSTER permission.
-     *
-     * @param attributes
-     *     The attributes to filter.
-     *
-     * @return
-     *     A map of only those attribute name/value pairs which the user
-     *     accessing this object has permission to view or modify.
-     */
-    private Map<String, String> filterAttributes(Map<String, String> attributes) {
-
-        // If a failure prevents retrieving permissions, assume the user lacks
-        // adminitrative privileges
-        boolean isAdmin = false;
-
-        // Attempt to determine whether the user has ADMINISTER permission
-        try {
-            Permissions permissions = userContext.self().getEffectivePermissions();
-            isAdmin = permissions.getSystemPermissions().hasPermission(SystemPermission.Type.ADMINISTER)
-                    || permissions.getUserPermissions().hasPermission(ObjectPermission.Type.ADMINISTER, getIdentifier());
-        }
-        catch (GuacamoleException e) {
-            logger.warn("A failure in the underlying extension is preventing "
-                    + "retrieval of user permissions. The current user will "
-                    + "be assumed to NOT have administrative privileges, and "
-                    + "will not be able to see/manipulate the attributes "
-                    + "controlling additional restrictions.");
-            logger.debug("Unable to determine whether current user has ADMINISTER permission.", e);
-        }
-
-        // Provide access to restriction attributes only if ADMINISTER
-        // permission can be verified
-        return userContext.filterAttributes(isAdmin, attributes);
-
+    public RestrictedUser(String username,
+            RestrictedUserGroupDirectory restrictedUserGroupDirectory) {
+        super(username);
+        this.restrictedUserGroupDirectory = restrictedUserGroupDirectory;
     }
 
     @Override
-    public void setAttributes(Map<String, String> attributes) {
-        super.setAttributes(filterAttributes(attributes));
-    }
-
-    @Override
-    public Map<String, String> getAttributes() {
-        return filterAttributes(super.getAttributes());
-    }
-
-    /**
-     * Returns the original User wrapped by this RestrictedUser. The returned
-     * User will not be affected by the restrictions otherwise enforced by this
-     * extension.
-     *
-     * @return
-     *     The original User wrapped by this RestrictedUser.
-     */
-    public User getUnrestrictedUser() {
-        return getDelegateUser();
+    public ObjectPermissionSet getUserGroupPermissions()
+            throws GuacamoleException {
+        return new SimpleObjectPermissionSet(restrictedUserGroupDirectory.getIdentifiers());
     }
 
 }

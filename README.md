@@ -4,16 +4,18 @@ guacamole-auth-restrict
 **guacamole-auth-restrict** is an authentication extension for [Apache
 Guacamole](http://guacamole.apache.org/) which enforces additional restrictions
 on users and the members of user groups. These restrictions are dictated by
-custom attributes that are added made available for the users and user groups
-defined by other extensions. If the write support for users and user groups
-is provided (such as by the database extensions included with Guacamole), these
-attributes will be editable by administrators within Guacamole's administrative
-interface.
+user groups and enforced on members of those groups.
+
+Keep in mind that **restrictions will only take effect if membership in the
+relevant group is defined by the backend authenticating the user**. This means
+that if users will be authenticating against LDAP, it is not sufficient to
+associate those users with the applicable group within a database backend like
+MySQL or PostgreSQL; they must be added to an LDAP group with the same name.
 
 Additional restrictions
 -----------------------
 
-Attribute name                  | Description
---------------------------------|-------------
-`addl-restrict-force-read-only` | Blocks interaction with all connections and connection groups.
+Group name      | Description
+----------------|-------------
+`ReadOnlyUsers` | Blocks interaction with all connections and connection groups. The name of this group may be overridden with the `read-only-group-name` property.
 

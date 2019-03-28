@@ -81,7 +81,7 @@ public class RestrictedExternalTunnel extends DelegatingGuacamoleTunnel {
 
         // Otherwise, allow instructions to pass through only if the user is
         // not subject to read-only restrictions
-        return restrictions.contains(Restriction.FORCE_READ_ONLY);
+        return !restrictions.contains(Restriction.FORCE_READ_ONLY);
         
     }
 

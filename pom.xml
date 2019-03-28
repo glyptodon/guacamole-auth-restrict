@@ -56,6 +56,72 @@
                 </configuration>
             </plugin>
 
+            <!-- Pre-cache Angular templates -->
+            <plugin>
+                <groupId>com.keithbranton.mojo</groupId>
+                <artifactId>angular-maven-plugin</artifactId>
+                <version>0.3.2</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>html2js</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDir>${basedir}/src/main/resources</sourceDir>
+                    <include>**/*.html</include>
+                    <target>${basedir}/src/main/resources/generated/templates-main/templates.js</target>
+                    <prefix>app/ext/addl-restrict</prefix>
+                </configuration>
+            </plugin>
+
+            <!-- JS/CSS Minification Plugin -->
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.7.5</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <configuration>
+                            <charset>UTF-8</charset>
+
+                            <webappSourceDir>${basedir}/src/main/resources</webappSourceDir>
+                            <webappTargetDir>${project.build.directory}/classes</webappTargetDir>
+
+                            <!-- CSS -->
+                            <cssSourceDir>/</cssSourceDir>
+                            <cssTargetDir>/</cssTargetDir>
+                            <cssFinalFile>addl-restrict.css</cssFinalFile>
+                            <cssSourceIncludes>
+                                <cssSourceInclude>**/*.css</cssSourceInclude>
+                            </cssSourceIncludes>
+
+                            <!-- JavaScript -->
+                            <jsSourceDir>/</jsSourceDir>
+                            <jsTargetDir>/</jsTargetDir>
+                            <jsFinalFile>addl-restrict.js</jsFinalFile>
+                            <jsSourceIncludes>
+                                <jsSourceInclude>**/*.js</jsSourceInclude>
+                            </jsSourceIncludes>
+
+                            <!-- Use Closure Compiler -->
+                            <jsEngine>CLOSURE</jsEngine>
+                            <closureWarningLevels>
+                                <misplacedTypeAnnotation>OFF</misplacedTypeAnnotation>
+                                <nonStandardJsDocs>OFF</nonStandardJsDocs>
+                            </closureWarningLevels>
+
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 

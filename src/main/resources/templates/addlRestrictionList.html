@@ -1,0 +1,8 @@
+<div class="addl-restrict" ng-show="restrictions.length">
+    <p translate="MANAGE_USER_GROUP.INFO_ADDITIONAL_RESTRICTIONS"
+       translate-values="{ IDENTIFIER : userGroup.identifier }"></p>
+    <dl class="restriction-list">
+        <dt ng-repeat-start="restriction in restrictions" class="restriction-name">{{ getRestrictionName(restriction) | translate }}</dt>
+        <dd ng-repeat-end class="restriction-description"><p>{{ getRestrictionDescription(restriction) | translate }}</p></dd>
+    </dl>
+</div>

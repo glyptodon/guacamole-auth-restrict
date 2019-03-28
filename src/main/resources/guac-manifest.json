@@ -9,6 +9,22 @@
         "com.glyptodon.guacamole.auth.restrict.RestrictedAuthenticationProvider"
     ],
 
+    "html"  : [
+        "html/restrictedGroup.html"
+    ],
+
+    "js"  : [
+        "addl-restrict.min.js"
+    ],
+
+    "css" : [
+        "addl-restrict.min.css"
+    ],
+
+    "resources" : {
+        "templates/addlRestrictionList.html" : "text/html"
+    },
+
     "translations" : [
         "translations/en.json"
     ]

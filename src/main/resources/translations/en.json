@@ -2,6 +2,15 @@
 
     "DATA_SOURCE_ADDL_RESTRICT" : {
         "NAME" : "Additional User/Group Restrictions"
+    },
+
+    "MANAGE_USER_GROUP" : {
+
+        "INFO_ADDITIONAL_RESTRICTIONS" : "The \"{IDENTIFIER}\" group corresponds to a group provided by the \"guacamole-auth-restrict\" extension and enforces the following additional restrictions:",
+        "INFO_ADDL_RESTRICT_FORCE_READ_ONLY" : "Members of this group may only interact with connections only in a read-only manner. Members will be able to access connections that they have been granted access to, but will not be able to interact with those connections using the keyboard, mouse, file transfer, etc.",
+
+        "NAME_ADDL_RESTRICT_FORCE_READ_ONLY" : "Read-only"
+
     }
 
 }

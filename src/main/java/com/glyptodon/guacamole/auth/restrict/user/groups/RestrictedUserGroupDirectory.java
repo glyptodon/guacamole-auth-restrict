@@ -31,6 +31,7 @@ import org.apache.guacamole.environment.Environment;
 import org.apache.guacamole.net.auth.AuthenticatedUser;
 import org.apache.guacamole.net.auth.UserGroup;
 import org.apache.guacamole.net.auth.simple.SimpleDirectory;
+import org.apache.guacamole.properties.StringGuacamoleProperty;
 
 /**
  * Directory of all user groups defined by the "guacamole-auth-restrict"
@@ -39,14 +40,43 @@ import org.apache.guacamole.net.auth.simple.SimpleDirectory;
 public class RestrictedUserGroupDirectory extends SimpleDirectory<UserGroup> {
 
     /**
+     * The default read-only group name, if not overridden by the
+     * "read-only-group-name" property.
+     */
+    private static final String DEFAULT_READ_ONLY_GROUP_NAME = "ReadOnlyUsers";
+
+    /**
+     * The Guacamole property controlling the name of the group whose members
+     * should be allowed only read-only access to their connections. If not
+     * specified, the default read-only group name is "ReadOnlyUsers".
+     */
+    private static final StringGuacamoleProperty READ_ONLY_GROUP_NAME = new StringGuacamoleProperty() {
+
+        @Override
+        public String getName() {
+            return "read-only-group-name";
+        }
+
+    };
+
+    /**
      * Creates a new RestrictedUserGroupDirectory which uses the given
-     * Environment to retrieve any relevant configuration information.
+     * Environment to retrieve any relevant configuration information. The
+     * following properties are currently defined:
+     *
+     *     "read-only-group-name" - The name of the group which should be
+     *         restricted to read-only access. By default, this group will be
+     *         "ReadOnlyUsers".
      *
      * @param environment
      *     The Environment to retrieve configuration information from.
+     *
+     * @throws GuacamoleException
+     *     If guacamole.properties cannot be read, or an error occurs parsing
+     *     configuration options within guacamole.properties.
      */
-    public RestrictedUserGroupDirectory(Environment environment) {
-        super(new ReadOnlyUsers("ReadOnlyUsers"));
+    public RestrictedUserGroupDirectory(Environment environment) throws GuacamoleException {
+        super(new ReadOnlyUsers(environment.getProperty(READ_ONLY_GROUP_NAME, DEFAULT_READ_ONLY_GROUP_NAME)));
     }
 
     /**

@@ -29,7 +29,7 @@
     <groupId>com.glyptodon.guacamole</groupId>
     <artifactId>guacamole-auth-restrict</artifactId>
     <packaging>jar</packaging>
-    <version>1.1.0</version>
+    <version>1.1.0-1</version>
     <name>guacamole-auth-restrict</name>
     <url>https://glyptodon.com/</url>
 

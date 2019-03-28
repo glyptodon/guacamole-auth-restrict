@@ -25,6 +25,9 @@ package com.glyptodon.guacamole.auth.restrict.connection;
 import java.util.Set;
 import com.glyptodon.guacamole.auth.restrict.Restriction;
 import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import org.apache.guacamole.io.GuacamoleReader;
 import org.apache.guacamole.io.GuacamoleWriter;
 import org.apache.guacamole.net.DelegatingGuacamoleTunnel;
@@ -37,6 +40,37 @@ import org.apache.guacamole.protocol.GuacamoleInstruction;
  * the user accessing the tunnel.
  */
 public class RestrictedExternalTunnel extends DelegatingGuacamoleTunnel {
+
+    /**
+     * The set of opcodes for all instructions which should be considered safe
+     * to transmit, even for users that are restricted to read-only access.
+     */
+    private final Set<String> OPCODE_WHITELIST = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+
+        // The "ack" instruction is required for receipt of streams, including
+        // image streams (critical for rendering) and audio. It does not allow
+        // interaction with the remote desktop and serves only to inform the
+        // server that data was successfully/unsuccessfully received.
+        "ack",
+
+        // The "disconnect" instruction informs the server that the client has
+        // has disconnected normally. It does not allow interaction with the
+        // remote desktop.
+        "disconnect",
+
+        // The "nop" instruction is a no-op. It has no effect on the connection
+        // other than to inform the server that the client is still alive. It
+        // may be sent by the client occasionally as a keep-alive ping.
+        "nop",
+
+        // The "sync" instruction is required for rendering. It informs the
+        // server that a frame has been fully processed. It does not allow
+        // interaction with the remote desktop and serves only to allow the
+        // server to adjust its frame timing, compression level, etc. relative
+        // to client responsiveness.
+        "sync"
+
+    )));
 
     /**
      * The set of restrictions affecting the user accessing this tunnel.
@@ -74,9 +108,8 @@ public class RestrictedExternalTunnel extends DelegatingGuacamoleTunnel {
      */
     private boolean canWrite(GuacamoleInstruction instruction) {
 
-        // Always allow "sync"
-        String opcode = instruction.getOpcode();
-        if ("sync".equals(opcode))
+        // Always allow universally whitelisted instructions
+        if (OPCODE_WHITELIST.contains(instruction.getOpcode()))
             return true;
 
         // Otherwise, allow instructions to pass through only if the user is

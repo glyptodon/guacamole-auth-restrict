@@ -33,6 +33,7 @@ import org.apache.guacamole.net.auth.ConnectionGroup;
 import org.apache.guacamole.net.auth.DecoratingDirectory;
 import org.apache.guacamole.net.auth.DelegatingUserContext;
 import org.apache.guacamole.net.auth.Directory;
+import org.apache.guacamole.net.auth.User;
 import org.apache.guacamole.net.auth.UserContext;
 
 /**
@@ -66,6 +67,26 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
     @Override
     public Set<Restriction> getRestrictions() {
         return restrictions;
+    }
+
+    @Override
+    public Directory<User> getUserDirectory() throws GuacamoleException {
+        return new DecoratingDirectory<User>(super.getUserDirectory()) {
+
+            @Override
+            protected User decorate(User object)
+                    throws GuacamoleException {
+                return new RestrictedExternalUser(RestrictedExternalUserContext.this, object);
+            }
+
+            @Override
+            protected User undecorate(User object)
+                    throws GuacamoleException {
+                assert(object instanceof RestrictedExternalUser);
+                return ((RestrictedExternalUser) object).getUnrestrictedUser();
+            }
+
+        };
     }
 
     @Override

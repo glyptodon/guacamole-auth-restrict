@@ -54,6 +54,7 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
      * represent and enforce additional restrictions.
      */
     private static final Form RESTRICTIONS = new Form("addl-restrict", Arrays.asList(
+        Restriction.DISALLOW_CONCURRENT.asField(),
         Restriction.FORCE_READ_ONLY.asField()
     ));
 

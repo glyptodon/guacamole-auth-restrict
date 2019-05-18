@@ -23,8 +23,12 @@
 package com.glyptodon.guacamole.auth.restrict;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.guacamole.form.BooleanField;
+import org.apache.guacamole.form.Field;
+import org.apache.guacamole.net.auth.Attributes;
 
 /**
  * A Restriction enforced by this extension. The association between a
@@ -97,6 +101,59 @@ public enum Restriction {
             attributes.put(restriction.getAttributeName(), TRUTH_VALUE);
 
         return attributes;
+
+    }
+
+    /**
+     * Returns a Field which represents the attribute controlling whether this
+     * restriction is enabled for a user or user group.
+     *
+     * @return
+     *     A Field representing the attribute controlling whether this
+     *     restriction is enabled.
+     */
+    public Field asField() {
+        return new BooleanField(attributeName, TRUTH_VALUE);
+    }
+
+    /**
+     * Returns whether this restriction is in effect for the object associated
+     * with the given attributes.
+     *
+     * @param object
+     *     The object whose attributes should be used to determine whether this
+     *     restriction applies.
+     *
+     * @return
+     *     true of this restriction is enabled according to the given
+     *     attributes, false otherwise.
+     */
+    public boolean isSet(Attributes object) {
+        Map<String, String> attributes = object.getAttributes();
+        return TRUTH_VALUE.equals(attributes.get(attributeName));
+    }
+
+    /**
+     * Returns the set of restrictions which apply to the given object, as
+     * dictated by associated attributes.
+     *
+     * @param object
+     *     The object whose attributes should be used to determine the
+     *     restrictions that apply.
+     *
+     * @return
+     *     The set of restrictions which apply to the object according to its
+     *     associated attributes.
+     */
+    public static EnumSet<Restriction> fromAttributes(Attributes object) {
+
+        EnumSet<Restriction> restrictions = EnumSet.allOf(Restriction.class);
+
+        // Remove all restrictions which are not enabled according to the
+        // attributes associated with the given object
+        restrictions.removeIf(restriction -> !restriction.isSet(object));
+
+        return restrictions;
 
     }
 

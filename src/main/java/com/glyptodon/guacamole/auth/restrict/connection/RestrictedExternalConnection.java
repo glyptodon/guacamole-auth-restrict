@@ -42,6 +42,11 @@ public class RestrictedExternalConnection extends DelegatingConnection {
     private final RestrictedExternalUserContext userContext;
 
     /**
+     * The connection manager tracking connection usage across all extensions.
+     */
+    private final ConnectionManager manager;
+
+    /**
      * Creates a new RestrictedConnection which wraps the given connection,
      * enforcing the restrictions that apply to the user associated with
      * the given UserContext.
@@ -56,12 +61,13 @@ public class RestrictedExternalConnection extends DelegatingConnection {
             Connection connection) {
         super(connection);
         this.userContext = userContext;
+        this.manager = userContext.getConnectionManager();
     }
 
     @Override
     public GuacamoleTunnel connect(GuacamoleClientInformation info,
             Map<String, String> tokens) throws GuacamoleException {
-        return new RestrictedExternalTunnel(userContext, super.connect(info, tokens));
+        return manager.connect(userContext, getDelegateConnection(), info, tokens);
     }
 
     /**

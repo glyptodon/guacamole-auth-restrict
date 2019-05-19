@@ -56,6 +56,19 @@ public class RestrictedUserGroupDirectory extends SimpleDirectory<UserGroup> {
     };
 
     /**
+     * The Guacamole property controlling the group whose members should be
+     * disallowed concurrent access.
+     */
+    private static final GroupListProperty DISALLOW_CONCURRENT_GROUPS = new GroupListProperty() {
+
+        @Override
+        public String getName() {
+            return "disallow-concurrent-groups";
+        }
+
+    };
+
+    /**
      * Returns a collection of all user groups that should be exposed by this
      * directory. These groups are dictated by properties within
      * guacamole.properties.
@@ -79,6 +92,10 @@ public class RestrictedUserGroupDirectory extends SimpleDirectory<UserGroup> {
         // Add read-only restriction for all specified groups
         for (String identifier : environment.getProperty(READ_ONLY_GROUPS, Collections.emptyList()))
             groupRestrictions.put(identifier, Restriction.FORCE_READ_ONLY);
+
+        // Add concurrent access restriction for all specified groups
+        for (String identifier : environment.getProperty(DISALLOW_CONCURRENT_GROUPS, Collections.emptyList()))
+            groupRestrictions.put(identifier, Restriction.DISALLOW_CONCURRENT);
 
         // Produce overall collection of defined groups, including any associated restrictions
         return groupRestrictions.keySet().stream()

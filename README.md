@@ -21,6 +21,22 @@ authenticating against LDAP, it is not sufficient to associate those users with
 the applicable group within a database backend like MySQL or PostgreSQL; they
 must be added to an LDAP group with the same name.
 
+Blocking concurrent access
+--------------------------
+
+Similar to the concurrent access restrictions provided by the database
+authentication extensions, blocking concurrent access prevents users from
+connecting to connections or connection groups that are already in use.
+
+To block concurrent access:
+
+* Set the `addl-restrict-disallow-concurrent` user attribute to `true`. If
+  using an extension that supports administration, this may be done through
+  the user edit screen.
+* Declare that a specific group should block concurrent access by listing that
+  group's name within the `disallow-concurrent-groups` property. Multiple
+  groups may be listed, separated by commas.
+
 Forcing read-only access
 ------------------------
 

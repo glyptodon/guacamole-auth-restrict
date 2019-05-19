@@ -21,10 +21,19 @@ authenticating against LDAP, it is not sufficient to associate those users with
 the applicable group within a database backend like MySQL or PostgreSQL; they
 must be added to an LDAP group with the same name.
 
-Additional restrictions
------------------------
+Forcing read-only access
+------------------------
 
-Default group name | Attribute name | Description
------------------- | -------------- | -----------
-`ReadOnlyUsers` | `addl-restrict-force-read-only` | Blocks interaction with all connections and connection groups. The name of the group may be overridden with the `read-only-group-name` property.
+Forcing read-only access blocks interaction with all connections and connection
+groups. Users will still be able to establish connections, but will not be able
+to interact with those connections using the keyboard, mouse, clipboard, etc.
+
+To force read-only access:
+
+* Set the `addl-restrict-force-read-only` user attribute to `true`. If using
+  an extension that supports administration, this may be done through the user
+  edit screen.
+* Declare that a specific group should force read-only access by listing that
+  group's name within the `read-only-groups` property. Multiple groups may be
+  listed, separated by commas.
 

@@ -63,8 +63,8 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
     private final Set<Restriction> restrictions;
 
     /**
-     * Creates a new RestrictedUserContext which wraps the given UserContext,
-     * applying the given restrictions.
+     * Creates a new RestrictedExternalUserContext which wraps the given
+     * UserContext, applying the given restrictions.
      *
      * @param restrictions
      *     The restrictions to apply to the given UserContext.

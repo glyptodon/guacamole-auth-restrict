@@ -1,6 +1,6 @@
 {
 
-    "guacamoleVersion" : "1.1.0",
+    "guacamoleVersion" : "1.0.0",
 
     "name"      : "Additional User/Group Restrictions",
     "namespace" : "addl-restrict",

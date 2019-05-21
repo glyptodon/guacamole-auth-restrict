@@ -25,6 +25,8 @@ package com.glyptodon.guacamole.auth.restrict;
 import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
 import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
 import com.glyptodon.guacamole.auth.restrict.user.groups.RestrictedUserGroupDirectory;
+import com.google.common.collect.Sets;
+import java.util.Set;
 import org.apache.guacamole.GuacamoleException;
 import org.apache.guacamole.environment.Environment;
 import org.apache.guacamole.environment.LocalEnvironment;
@@ -80,9 +82,17 @@ public class RestrictedAuthenticationProvider extends AbstractAuthenticationProv
     public UserContext decorate(UserContext context,
             AuthenticatedUser authenticatedUser, Credentials credentials)
             throws GuacamoleException {
-        return new RestrictedExternalUserContext(
-                restrictedUserGroupDirectory.getRestrictions(authenticatedUser),
-                context);
+
+        // Include restrictions from effective groups (defined by the extension
+        // authenticating the user) and from the user object (defined by the
+        // extension associated with the UserContext being decorated)
+        Set<Restriction> restrictions = Sets.union(
+            restrictedUserGroupDirectory.getRestrictions(authenticatedUser),
+            Restriction.fromAttributes(context.self())
+        );
+
+        return new RestrictedExternalUserContext(restrictions, context);
+
     }
 
 }

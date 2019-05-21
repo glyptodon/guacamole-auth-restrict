@@ -47,7 +47,7 @@ public class RestrictedExternalConnection extends DelegatingConnection {
      * the given UserContext.
      *
      * @param userContext
-     *     The UserContext of the user accessing the connection group.
+     *     The UserContext of the user accessing the connection.
      *
      * @param connection
      *     The connection that the user is attempting to access.

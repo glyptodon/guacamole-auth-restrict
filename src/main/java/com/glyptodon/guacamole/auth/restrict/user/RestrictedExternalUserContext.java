@@ -28,11 +28,18 @@ import org.apache.guacamole.GuacamoleException;
 import com.glyptodon.guacamole.auth.restrict.Restriction;
 import com.glyptodon.guacamole.auth.restrict.connection.RestrictedExternalConnection;
 import com.glyptodon.guacamole.auth.restrict.connection.RestrictedExternalConnectionGroup;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.guacamole.form.Form;
 import org.apache.guacamole.net.auth.Connection;
 import org.apache.guacamole.net.auth.ConnectionGroup;
 import org.apache.guacamole.net.auth.DecoratingDirectory;
 import org.apache.guacamole.net.auth.DelegatingUserContext;
 import org.apache.guacamole.net.auth.Directory;
+import org.apache.guacamole.net.auth.User;
 import org.apache.guacamole.net.auth.UserContext;
 
 /**
@@ -43,13 +50,21 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
         implements Restricted {
 
     /**
+     * A Form which describes the custom attributes used by this extension to
+     * represent and enforce additional restrictions.
+     */
+    private static final Form RESTRICTIONS = new Form("addl-restrict", Arrays.asList(
+        Restriction.FORCE_READ_ONLY.asField()
+    ));
+
+    /**
      * The restrictions that apply to the wrapped UserContext.
      */
     private final Set<Restriction> restrictions;
 
     /**
-     * Creates a new RestrictedUserContext which wraps the given UserContext,
-     * applying the given restrictions.
+     * Creates a new RestrictedExternalUserContext which wraps the given
+     * UserContext, applying the given restrictions.
      *
      * @param restrictions
      *     The restrictions to apply to the given UserContext.
@@ -66,6 +81,26 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
     @Override
     public Set<Restriction> getRestrictions() {
         return restrictions;
+    }
+
+    @Override
+    public Directory<User> getUserDirectory() throws GuacamoleException {
+        return new DecoratingDirectory<User>(super.getUserDirectory()) {
+
+            @Override
+            protected User decorate(User object)
+                    throws GuacamoleException {
+                return new RestrictedExternalUser(RestrictedExternalUserContext.this, object);
+            }
+
+            @Override
+            protected User undecorate(User object)
+                    throws GuacamoleException {
+                assert(object instanceof RestrictedExternalUser);
+                return ((RestrictedExternalUser) object).getUnrestrictedUser();
+            }
+
+        };
     }
 
     @Override
@@ -108,6 +143,70 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
             }
 
         };
+    }
+
+    /**
+     * Returns a collection of Form objects which includes a Form describing
+     * the custom attributes used by this extension. The Form objects from
+     * the UserContext being wrapped are included.
+     *
+     * @param attributes
+     *     The Form objects describing the attributes declared by the
+     *     UserContext being wrapped.
+     *
+     * @return
+     *     A Collection of Form objects which includes all of the given Form
+     *     objects, as well as the Form that describes the custom attributes
+     *     used by this extension.
+     */
+    private Collection<Form> getDecoratedAttributes(Collection<Form> attributes) {
+        Collection<Form> decoratedAttributes = new ArrayList<>(attributes.size() + 1);
+        decoratedAttributes.addAll(attributes);
+        decoratedAttributes.add(RESTRICTIONS);
+        return decoratedAttributes;
+    }
+
+    /**
+     * Filters the given map of attribute name/value pairs, returning a
+     * potentially new map which contains only the attributes that the
+     * user has permission to view or modify.
+     *
+     * @param isAdmin
+     *     Whether the user has permission to view or modify the custom
+     *     attributes managed by this extension.
+     *
+     * @param attributes
+     *     The attributes to filter.
+     *
+     * @return
+     *     A map of only those attribute name/value pairs which the user
+     *     has permission to view or modify.
+     */
+    public Map<String, String> filterAttributes(boolean isAdmin,
+            Map<String, String> attributes) {
+
+        Map<String, String> filteredAttributes = new HashMap<>(attributes);
+        for (Restriction restriction : Restriction.values()) {
+
+            // Ensure restriction attributes are always defined if user has
+            // administrative permissions
+            if (isAdmin)
+                filteredAttributes.putIfAbsent(restriction.getAttributeName(), null);
+
+            // If user does not have administrative permissions, block access
+            // to all restriction attributes
+            else
+                filteredAttributes.remove(restriction.getAttributeName());
+
+        }
+
+        return filteredAttributes;
+
+    }
+
+    @Override
+    public Collection<Form> getUserAttributes() {
+        return getDecoratedAttributes(super.getUserAttributes());
     }
 
 }

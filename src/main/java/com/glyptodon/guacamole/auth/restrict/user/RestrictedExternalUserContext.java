@@ -26,6 +26,7 @@ import com.glyptodon.guacamole.auth.restrict.Restricted;
 import java.util.Set;
 import org.apache.guacamole.GuacamoleException;
 import com.glyptodon.guacamole.auth.restrict.Restriction;
+import com.glyptodon.guacamole.auth.restrict.connection.ConnectionManager;
 import com.glyptodon.guacamole.auth.restrict.connection.RestrictedExternalConnection;
 import com.glyptodon.guacamole.auth.restrict.connection.RestrictedExternalConnectionGroup;
 import java.util.ArrayList;
@@ -54,8 +55,15 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
      * represent and enforce additional restrictions.
      */
     private static final Form RESTRICTIONS = new Form("addl-restrict", Arrays.asList(
+        Restriction.DISALLOW_CONCURRENT.asField(),
         Restriction.FORCE_READ_ONLY.asField()
     ));
+
+    /**
+     * The connection manager tracking connection usage of connections and
+     * connection groups within this UserContext.
+     */
+    private final ConnectionManager manager;
 
     /**
      * The restrictions that apply to the wrapped UserContext.
@@ -66,16 +74,34 @@ public class RestrictedExternalUserContext extends DelegatingUserContext
      * Creates a new RestrictedExternalUserContext which wraps the given
      * UserContext, applying the given restrictions.
      *
+     * @param manager
+     *     The connection manager instance that should be used to track
+     *     connection usage within this user context.
+     *
      * @param restrictions
      *     The restrictions to apply to the given UserContext.
      *
      * @param userContext
      *     The UserContext restrict access to.
      */
-    public RestrictedExternalUserContext(Set<Restriction> restrictions,
-            UserContext userContext) {
+    public RestrictedExternalUserContext(ConnectionManager manager,
+            Set<Restriction> restrictions, UserContext userContext) {
         super(userContext);
+        this.manager = manager;
         this.restrictions = restrictions;
+    }
+
+    /**
+     * Returns the connection manager that should be used to establish
+     * connections to any connection or connection group accessed via this
+     * RestrictedUserContext.
+     *
+     * @return
+     *     The connection manager that should be used to establish any
+     *     connections.
+     */
+    public ConnectionManager getConnectionManager() {
+        return manager;
     }
 
     @Override

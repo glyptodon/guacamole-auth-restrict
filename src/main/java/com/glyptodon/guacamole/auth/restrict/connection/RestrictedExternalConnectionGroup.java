@@ -42,6 +42,11 @@ public class RestrictedExternalConnectionGroup extends DelegatingConnectionGroup
     private final RestrictedExternalUserContext userContext;
 
     /**
+     * The connection manager tracking connection usage across all extensions.
+     */
+    private final ConnectionManager manager;
+
+    /**
      * Creates a new RestrictedConnectionGroup which wraps the given connection
      * group, enforcing the restrictions that apply to the user associated with
      * the given UserContext.
@@ -56,12 +61,13 @@ public class RestrictedExternalConnectionGroup extends DelegatingConnectionGroup
             ConnectionGroup connectionGroup) {
         super(connectionGroup);
         this.userContext = userContext;
+        this.manager = userContext.getConnectionManager();
     }
 
     @Override
     public GuacamoleTunnel connect(GuacamoleClientInformation info,
             Map<String, String> tokens) throws GuacamoleException {
-        return new RestrictedExternalTunnel(userContext, super.connect(info, tokens));
+        return manager.connect(userContext, getDelegateConnectionGroup(), info, tokens);
     }
 
     /**

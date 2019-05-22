@@ -23,15 +23,18 @@
 package com.glyptodon.guacamole.auth.restrict.user.groups;
 
 import com.glyptodon.guacamole.auth.restrict.Restriction;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.guacamole.GuacamoleException;
 import org.apache.guacamole.environment.Environment;
 import org.apache.guacamole.net.auth.AuthenticatedUser;
 import org.apache.guacamole.net.auth.UserGroup;
 import org.apache.guacamole.net.auth.simple.SimpleDirectory;
-import org.apache.guacamole.properties.StringGuacamoleProperty;
 
 /**
  * Directory of all user groups defined by the "guacamole-auth-restrict"
@@ -40,33 +43,75 @@ import org.apache.guacamole.properties.StringGuacamoleProperty;
 public class RestrictedUserGroupDirectory extends SimpleDirectory<UserGroup> {
 
     /**
-     * The default read-only group name, if not overridden by the
-     * "read-only-group-name" property.
+     * The Guacamole property controlling the group whose members should be
+     * restricted to read-only access.
      */
-    private static final String DEFAULT_READ_ONLY_GROUP_NAME = "ReadOnlyUsers";
-
-    /**
-     * The Guacamole property controlling the name of the group whose members
-     * should be allowed only read-only access to their connections. If not
-     * specified, the default read-only group name is "ReadOnlyUsers".
-     */
-    private static final StringGuacamoleProperty READ_ONLY_GROUP_NAME = new StringGuacamoleProperty() {
+    private static final GroupListProperty READ_ONLY_GROUPS = new GroupListProperty() {
 
         @Override
         public String getName() {
-            return "read-only-group-name";
+            return "read-only-groups";
         }
 
     };
+
+    /**
+     * The Guacamole property controlling the group whose members should be
+     * disallowed concurrent access.
+     */
+    private static final GroupListProperty DISALLOW_CONCURRENT_GROUPS = new GroupListProperty() {
+
+        @Override
+        public String getName() {
+            return "disallow-concurrent-groups";
+        }
+
+    };
+
+    /**
+     * Returns a collection of all user groups that should be exposed by this
+     * directory. These groups are dictated by properties within
+     * guacamole.properties.
+     *
+     * @param environment
+     *     The Environment to retrieve configuration information from.
+     *
+     * @return
+     *     A collection of all user groups that should be exposed by this
+     *     directory, as defined by guacamole.properties.
+     *
+     * @throws GuacamoleException
+     *     If guacamole.properties cannot be read, or an error occurs parsing
+     *     configuration options within guacamole.properties.
+     */
+    private static Collection<UserGroup> getPredefinedUserGroups(Environment environment)
+            throws GuacamoleException {
+
+        Multimap<String, Restriction> groupRestrictions = HashMultimap.create();
+
+        // Add read-only restriction for all specified groups
+        for (String identifier : environment.getProperty(READ_ONLY_GROUPS, Collections.emptyList()))
+            groupRestrictions.put(identifier, Restriction.FORCE_READ_ONLY);
+
+        // Add concurrent access restriction for all specified groups
+        for (String identifier : environment.getProperty(DISALLOW_CONCURRENT_GROUPS, Collections.emptyList()))
+            groupRestrictions.put(identifier, Restriction.DISALLOW_CONCURRENT);
+
+        // Produce overall collection of defined groups, including any associated restrictions
+        return groupRestrictions.keySet().stream()
+                .map(identifier -> new RestrictedUserGroup(identifier, groupRestrictions.get(identifier)))
+                .collect(Collectors.toList());
+
+    }
 
     /**
      * Creates a new RestrictedUserGroupDirectory which uses the given
      * Environment to retrieve any relevant configuration information. The
      * following properties are currently defined:
      *
-     *     "read-only-group-name" - The name of the group which should be
-     *         restricted to read-only access. By default, this group will be
-     *         "ReadOnlyUsers".
+     *     "read-only-groups" - The names of all group which should be
+     *         restricted to read-only access. By default, no groups are
+     *         restricted.
      *
      * @param environment
      *     The Environment to retrieve configuration information from.
@@ -76,7 +121,7 @@ public class RestrictedUserGroupDirectory extends SimpleDirectory<UserGroup> {
      *     configuration options within guacamole.properties.
      */
     public RestrictedUserGroupDirectory(Environment environment) throws GuacamoleException {
-        super(new ReadOnlyUsers(environment.getProperty(READ_ONLY_GROUP_NAME, DEFAULT_READ_ONLY_GROUP_NAME)));
+        super(getPredefinedUserGroups(environment));
     }
 
     /**

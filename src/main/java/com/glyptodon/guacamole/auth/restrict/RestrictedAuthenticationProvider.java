@@ -22,6 +22,7 @@
 
 package com.glyptodon.guacamole.auth.restrict;
 
+import com.glyptodon.guacamole.auth.restrict.connection.ConnectionManager;
 import com.glyptodon.guacamole.auth.restrict.user.RestrictedExternalUserContext;
 import com.glyptodon.guacamole.auth.restrict.user.RestrictedUserContext;
 import com.glyptodon.guacamole.auth.restrict.user.groups.RestrictedUserGroupDirectory;
@@ -53,6 +54,12 @@ public class RestrictedAuthenticationProvider extends AbstractAuthenticationProv
      * "guacamole-auth-restrict" extension.
      */
     private final RestrictedUserGroupDirectory restrictedUserGroupDirectory;
+
+    /**
+     * Singleton instance of ConnectionManager, to be used to track connection
+     * usage across all UserContexts simultaneously.
+     */
+    private final ConnectionManager manager = new ConnectionManager();
 
     /**
      * Creates a new RestrictedAuthenticationProvider which reads all
@@ -91,7 +98,7 @@ public class RestrictedAuthenticationProvider extends AbstractAuthenticationProv
             Restriction.fromAttributes(context.self())
         );
 
-        return new RestrictedExternalUserContext(restrictions, context);
+        return new RestrictedExternalUserContext(manager, restrictions, context);
 
     }
 

@@ -39,6 +39,13 @@ import org.apache.guacamole.net.auth.Attributes;
 public enum Restriction {
 
     /**
+     * Disallows concurrent access to connections or connection groups that are
+     * already in use, regardless of any restrictions enforced by other
+     * extensions.
+     */
+    DISALLOW_CONCURRENT("addl-restrict-disallow-concurrent"),
+
+    /**
      * Forces all connections to be read-only when accessed by the members of
      * the affected user group. When in effect, instructions sent to the
      * connection by affected group members will be dropped. Only the "sync"

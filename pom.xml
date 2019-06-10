@@ -29,7 +29,7 @@
     <groupId>com.glyptodon.guacamole</groupId>
     <artifactId>guacamole-auth-restrict</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0-2</version>
+    <version>1.0.0-3</version>
     <name>guacamole-auth-restrict</name>
     <url>https://glyptodon.com/</url>
 
@@ -54,6 +54,26 @@
                     </compilerArgs>
                     <fork>true</fork>
                 </configuration>
+            </plugin>
+
+            <!-- Copy dependencies prior to packaging -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.10</version>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Pre-cache Angular templates -->
